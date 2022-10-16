@@ -1,0 +1,202 @@
+cloning node1 and node2
+network setting adaptor 1 : brdiged adaptor (allows all)
+
+log on sudo user
+
+## ip settings @ansible
+
+ip ad
+nmcli device
+nmcli device delete virbr0
+nmcli device connect enp0s3
+nmcli connection add type ethernet ifname enp0s3 con-name ansible ip4 192.168.122.10/24
+nmcli connection up ansible
+
+@ node1
+
+ip ad
+nmcli device
+nmcli device delete virbr0
+nmcli device connect enp0s3
+nmcli connection add type ethernet ifname enp0s3 con-name node1 ip4 192.168.122.50/24
+nmcli connection up node1
+
+@ node2
+
+ip ad
+nmcli device
+nmcli device delete virbr0
+nmcli device connect enp0s3
+nmcli connection add type ethernet ifname enp0s3 con-name node2 ip4 192.168.122.100/24
+nmcli connection up node2
+
+@ ansible
+
+hostnamectl set-hostname ansible.linux.com
+
+vim /etc/yum.repos.d/server.repo
+[hhh]
+name=jhdjhd
+baseurl=file:///mnt
+enable=1
+gpgcheck=0
+
+lsblk
+	-cd rom attach check
+mount /dev/sr0 /mnt
+ls /mnt
+
+change network adapoter to bridged adopter
+
+nmcli connection up emp0s3
+ping 8.8.8.8
+
+fire box
+install ansible in redhat 7
+itzgeek.com
+copy yum install
+then
+yum install ansible
+
+
+@node1
+	nmcli connection up node-1
+	useradd mishal
+	passwd abcd
+	hostnamectl set-hostname node-1.linux.com
+@node2
+	nmcli connection up node-2
+	useradd mishal
+passwd abcd
+	hostnamectl set-hostname node-2.linux.com
+@ansible
+	
+
+check for network bridged adapter allows all
+
+nmcli connection up ansible
+
+	ping 192.168.122.50
+	ping 192.168.122.100
+	ping node-1linux.com
+	ping node-2linux.com
+
+vim /etc/hosts
+	add new line
+	192.168.122.10 ansible.linux.com
+	192.168.122.50 node1.linux.com
+	192.168.122.100 node2.linux.com
+
+send /etc/hosts file to clients
+	scp /etc/hosts 192.168.122.50:/etc/hosts
+	scp /etc/hosts 192.168.122.100:/etc/hosts
+
+create ssh-keygen
+
+	ssh lakshmi@node1,linux.com
+	ssh lakshmi@node2.linux.com
+
+	
+	ssh-keygen
+
+send public key to clients
+	ssh-copy-id kathy@node1.linux.com
+	ssh-copy-id kathy@node2.linux.com
+	
+	ssh kathy@node-1.linux.com
+	ssh kathy@node-2.linux.com
+
+
+@node1 and @ node2	
+
+vim /etc/ssh/sshd_config
+
+		@43 publickey authentication enable
+		@65 password authentication disable
+
+systemctl restart sshd
+	
+super user priviledge to mishal node 1 user
+
+@node1 & node2
+	vim /etc/sudoers
+	@110 th lines add wheel group enable
+	usermod -G wheel mishal
+exit and login again as mishal
+	sudo useradd test    
+
+ansible version
+	ansible --version
+	cd /etc/ansible    
+	ls (ansible.cfg, roles, hosts(inventory))
+
+	playbook helps to start any service on clients which are present in hosts in ansible library
+	Ansible architecture (group - machines) like webservers, dbservers groups
+playbook
+	vim /etc/ansible/inventory
+			[smar]
+			node1.linux.com
+			node2.linux.com
+
+			vim /etc/ansible/ansible.cfg
+		
+under defaults
+
+			inventory = ./inventory
+			remote_user = kathy
+			ask_pass = false
+			[privilege_escalation]
+			become = true
+			become_method = sudo
+			become_user = root
+			become_ask_pass = false
+	
+ansible smar --list-hosts
+
+ansible all -m ping
+
+id mishal to see user details
+to add user
+	ansible cloud -m user -a 'name=newbie uid=4000 state=present'
+to delete these user
+	ansible cloud -m user -a 'name=newbie uid=4000 state=absent'
+to check user added	cat /etc/passwd
+	ansible localhost/smar -m command -a 'id'
+
+
+playbook1 = create a user
+
+Playbook		vim /etc/ansible/pbook1.yml
+				
+				---
+				- name: Configure important user consistently
+				  hosts: servera.lab.example.com
+				  tasks:
+					- name: newbie exists with UID 4000
+					  user:
+						name: newbie
+						uid: 4000
+						state: present
+ansible-playbook playbook1.yml
+rm -vf pbook4.swp to delete 
+
+
+@ node1 and 2
+
+rm -vf /etc/yum.repos.d/*
+
+create server.repo in diffrnt name
+
+vim /etc/yum.repos.d/server.repo
+
+always mount to mnt when restart
+
+mount /dev/sr0 mnt
+
+ls /mnt
+
+yum clean all
+yum repolist all
+
+ansible node1.linux.com -m sommand -a 'cat /etc/yum.repos.d/server.repo'
+
